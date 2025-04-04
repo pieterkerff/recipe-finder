@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recipe Details</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- ===== Background Decorative Shapes ===== -->
+    <div class="background-shape shape-1"></div>
+    <div class="background-shape shape-2"></div>
+    <div class="background-shape shape-3"></div>
+    <!-- ============================================= -->
+
+    <!-- ===== Main Content Wrapper ===== -->
+    <main class="main-content">
+        <div class="recipe-detail-container">
+            <a href="index.html" class="back-link">Back to Search</a>
+
+            <div id="loading-message"><p>Loading recipe details...</p></div>
+            <div id="error-message" style="display: none;"><p></p></div>
+
+            <div id="recipe-content" style="display: none;">
+                <h1 id="recipe-title">Recipe Title</h1>
+                <img id="recipe-image" src="" alt="Recipe Image" loading="lazy">
+
+                <div class="recipe-meta">
+                     <span id="recipe-servings">Servings: -</span>
+                     <span id="recipe-time">Ready in: - minutes</span>
+                     <span id="recipe-source">Source: <a href="#" target="_blank" rel="noopener noreferrer">-</a></span>
+                </div>
+
+                <div id="recipe-summary" class="recipe-section" style="display: none;"> <!-- Hide initially -->
+                     <h2>Summary</h2>
+                     <div id="summary-content"></div> <!-- Summary content here -->
+                </div>
+
+                <div class="recipe-section">
+                    <h2>Ingredients</h2>
+                    <ul id="recipe-ingredients">
+                        <!-- Ingredient list items here -->
+                    </ul>
+                </div>
+
+                <div class="recipe-section">
+                     <h2>Instructions</h2>
+                     <ol id="recipe-instructions">
+                         <!-- Instruction steps here -->
+                     </ol>
+                 </div>
+
+                <div id="recipe-nutrition" class="recipe-section" style="display: none;"> <!-- Hide initially -->
+                    <h2>Nutrition (approx. per serving)</h2>
+                     <div id="nutrition-details">
+                         <!-- Nutrition details here -->
+                     </div>
+                </div>
+            </div> <!-- End recipe-content -->
+        </div> <!-- End recipe-detail-container -->
+     </main> <!-- End Main Content Wrapper -->
+
+    <!-- ===== Footer ===== -->
+    <footer class="site-footer">
+        <p>© <span id="year-detail"></span> Recipe Finder. Enjoy your meal!</p>
+    </footer>
+    <!-- ======================= -->
+
+    <!-- Link to the JavaScript file for this page -->
+    <script src="recipe.js" defer></script>
+    <!-- Add script for year in footer -->
+    <script>document.getElementById('year-detail').textContent = new Date().getFullYear();</script>
+</body>
+</html>

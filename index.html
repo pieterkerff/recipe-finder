@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recipe Finder</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- ===== Background Decorative Shapes ===== -->
+    <div class="background-shape shape-1"></div>
+    <div class="background-shape shape-2"></div>
+    <div class="background-shape shape-3"></div>
+    <!-- ============================================= -->
+
+    <!-- ===== Main Content Wrapper ===== -->
+    <main class="main-content">
+
+        <h1>Recipe Finder</h1>
+
+        <!-- ===== Introduction Text ===== -->
+        <section class="intro-text">
+            <p>Welcome! Discover thousands of recipes from around the world. <br> Search by keyword, include ingredients you have, exclude ones you don't, or use the advanced filters to find the perfect meal for any occasion, diet, or craving.</p>
+            <p>Let's get cooking! 🍳</p>
+        </section>
+        <!-- ================================== -->
+
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="Search recipes by keyword...">
+            <button id="searchButton">Search</button>
+            <!-- ===== NEW Filter Trigger Button ===== -->
+            <button id="filterToggleButton" class="filter-button" aria-label="Open Filters" aria-haspopup="true" aria-expanded="false">
+                <span class="filter-icon">☰</span> Filters <span id="filter-count-badge" class="filter-count-badge" style="display: none;">0</span>
+            </button>
+            <!-- ====================================== -->
+        </div>
+
+        <!-- ===== Results Area ===== -->
+        <div id="recipe-results" class="results-container">
+            <!-- Recipe results will be displayed here -->
+        </div>
+
+    </main> <!-- End Main Content Wrapper -->
+
+    <!-- ================== NEW Filter Sidebar ================== -->
+    <aside id="filterSidebar" class="filter-sidebar" role="dialog" aria-modal="true" aria-labelledby="filterSidebarTitle" hidden>
+        <div class="sidebar-header">
+            <h2 id="filterSidebarTitle">Refine Your Search</h2>
+            <button id="closeFilterSidebarButton" class="close-button" aria-label="Close Filters">×</button>
+        </div>
+
+        <div class="sidebar-content">
+            <!-- Group 1: Ingredients -->
+            <div class="filter-group ingredient-filters">
+                <div class="filter-item">
+                    <label for="includeIngredients">Include Ingredients:</label>
+                    <input type="text" id="includeIngredients" placeholder="e.g., chicken, tomatoes (comma-sep)">
+                </div>
+                <div class="filter-item">
+                    <label for="excludeIngredients">Exclude Ingredients:</label>
+                    <input type="text" id="excludeIngredients" placeholder="e.g., mushrooms, olives (comma-sep)">
+                </div>
+            </div>
+
+            <!-- Group 2: Selects & Time -->
+            <div class="filter-group select-filters">
+                <div class="filter-item">
+                    <label for="cuisineSelect">Cuisine:</label>
+                    <select id="cuisineSelect">
+                        <option value="">Any</option>
+                        <option value="African">African</option>
+                        <option value="Asian">Asian</option>
+                        <option value="American">American</option>
+                        <option value="British">British</option>
+                        <option value="Cajun">Cajun</option>
+                        <option value="Caribbean">Caribbean</option>
+                        <option value="Chinese">Chinese</option>
+                        <option value="European">European</option>
+                        <option value="French">French</option>
+                        <option value="German">German</option>
+                        <option value="Greek">Greek</option>
+                        <option value="Indian">Indian</option>
+                        <option value="Irish">Irish</option>
+                        <option value="Italian">Italian</option>
+                        <option value="Japanese">Japanese</option>
+                        <option value="Jewish">Jewish</option>
+                        <option value="Korean">Korean</option>
+                        <option value="Latin American">Latin American</option>
+                        <option value="Mediterranean">Mediterranean</option>
+                        <option value="Mexican">Mexican</option>
+                        <option value="Middle Eastern">Middle Eastern</option>
+                        <option value="Nordic">Nordic</option>
+                        <option value="Southern">Southern</option>
+                        <option value="Spanish">Spanish</option>
+                        <option value="Thai">Thai</option>
+                        <option value="Vietnamese">Vietnamese</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label for="dietSelect">Diet:</label>
+                    <select id="dietSelect">
+                        <option value="">Any</option>
+                        <option value="Gluten Free">Gluten Free</option>
+                        <option value="Ketogenic">Ketogenic</option>
+                        <option value="Vegetarian">Vegetarian</option>
+                        <option value="Lacto-Vegetarian">Lacto-Vegetarian</option>
+                        <option value="Ovo-Vegetarian">Ovo-Vegetarian</option>
+                        <option value="Vegan">Vegan</option>
+                        <option value="Pescetarian">Pescetarian</option>
+                        <option value="Paleo">Paleo</option>
+                        <option value="Primal">Primal</option>
+                        <option value="Low FODMAP">Low FODMAP</option>
+                        <option value="Whole30">Whole30</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label for="typeSelect">Meal Type:</label>
+                    <select id="typeSelect">
+                        <option value="">Any</option>
+                        <option value="main course">Main Course</option>
+                        <option value="side dish">Side Dish</option>
+                        <option value="dessert">Dessert</option>
+                        <option value="appetizer">Appetizer</option>
+                        <option value="salad">Salad</option>
+                        <option value="bread">Bread</option>
+                        <option value="breakfast">Breakfast</option>
+                        <option value="soup">Soup</option>
+                        <option value="beverage">Beverage</option>
+                        <option value="sauce">Sauce</option>
+                        <option value="marinade">Marinade</option>
+                        <option value="fingerfood">Fingerfood</option>
+                        <option value="snack">Snack</option>
+                        <option value="drink">Drink</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label for="maxReadyTime">Max Time (min):</label>
+                    <input type="number" id="maxReadyTime" min="0" placeholder="e.g., 30">
+                </div>
+            </div> <!-- End filter-group select-filters -->
+
+            <!-- Group 3: Intolerances -->
+            <div class="filter-group intolerances-section">
+                <label class="group-label">Intolerances:</label>
+                <div class="intolerance-group">
+                     <label><input type="checkbox" name="intolerance" value="Dairy"><span>Dairy</span></label>
+                     <label><input type="checkbox" name="intolerance" value="Egg"><span>Egg</span></label>
+                     <label><input type="checkbox" name="intolerance" value="Gluten"><span>Gluten</span></label>
+                     <label><input type="checkbox" name="intolerance" value="Grain"><span>Grain</span></label>
+                     <label><input type="checkbox" name="intolerance" value="Peanut"><span>Peanut</span></label>
+                     <label><input type="checkbox" name="intolerance" value="Seafood"><span>Seafood</span></label>
+                     <label><input type="checkbox" name="intolerance" value="Sesame"><span>Sesame</span></label>
+                     <label><input type="checkbox" name="intolerance" value="Shellfish"><span>Shellfish</span></label>
+                     <label><input type="checkbox" name="intolerance" value="Soy"><span>Soy</span></label>
+                     <label><input type="checkbox" name="intolerance" value="Sulfite"><span>Sulfite</span></label>
+                     <label><input type="checkbox" name="intolerance" value="Tree Nut"><span>Tree Nut</span></label>
+                     <label><input type="checkbox" name="intolerance" value="Wheat"><span>Wheat</span></label>
+                </div>
+             </div> <!-- End intolerances-section -->
+        </div> <!-- End sidebar-content -->
+
+        <div class="sidebar-footer">
+            <button id="clearFiltersButton" class="button-secondary">Clear Filters</button>
+            <button id="applyFiltersButton" class="button-primary">Apply & Search</button>
+        </div>
+    </aside>
+    <!-- ================== End Filter Sidebar ================== -->
+
+    <!-- ===== NEW Overlay for when sidebar is open ===== -->
+    <div id="overlay" class="overlay" hidden></div>
+    <!-- ================================================== -->
+
+    <!-- ===== Footer ===== -->
+    <footer class="site-footer">
+        <p>© <span id="year"></span> Recipe Finder. Happy Cooking!</p>
+    </footer>
+    <!-- ======================= -->
+
+    <!-- Link to your JavaScript file -->
+    <script src="script.js" defer></script>
+    <!-- Add script for year in footer -->
+    <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+</body>
+</html>
