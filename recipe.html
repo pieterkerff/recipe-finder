@@ -17,7 +17,12 @@
     <!-- ===== Main Content Wrapper ===== -->
     <main class="main-content">
         <div class="recipe-detail-container">
-            <a href="index.html" class="back-link">Back to Search</a>
+            <div class="detail-page-header"> <!-- Wrapper for back/print -->
+                <a href="index.html" class="back-link">Back to Search</a>
+                <!-- ===== NEW: Print Button ===== -->
+                <button id="printRecipeButton" class="button-secondary print-button">🖨️ Print Recipe</button>
+                 <!-- ============================ -->
+            </div>
 
             <div id="loading-message"><p>Loading recipe details...</p></div>
             <div id="error-message" style="display: none;"><p></p></div>
@@ -32,14 +37,14 @@
                      <span id="recipe-source">Source: <a href="#" target="_blank" rel="noopener noreferrer">-</a></span>
                 </div>
 
-                <div id="recipe-summary" class="recipe-section" style="display: none;"> <!-- Hide initially -->
+                <div id="recipe-summary" class="recipe-section" style="display: none;">
                      <h2>Summary</h2>
-                     <div id="summary-content"></div> <!-- Summary content here -->
+                     <div id="summary-content"></div>
                 </div>
 
                 <div class="recipe-section">
                     <h2>Ingredients</h2>
-                    <ul id="recipe-ingredients">
+                    <ul id="recipe-ingredients" class="ingredient-checklist"> <!-- Added class -->
                         <!-- Ingredient list items here -->
                     </ul>
                 </div>
@@ -51,7 +56,7 @@
                      </ol>
                  </div>
 
-                <div id="recipe-nutrition" class="recipe-section" style="display: none;"> <!-- Hide initially -->
+                <div id="recipe-nutrition" class="recipe-section" style="display: none;">
                     <h2>Nutrition (approx. per serving)</h2>
                      <div id="nutrition-details">
                          <!-- Nutrition details here -->

@@ -29,21 +29,57 @@
         <div class="search-container">
             <input type="text" id="searchInput" placeholder="Search recipes by keyword...">
             <button id="searchButton">Search</button>
-            <!-- ===== NEW Filter Trigger Button ===== -->
             <button id="filterToggleButton" class="filter-button" aria-label="Open Filters" aria-haspopup="true" aria-expanded="false">
                 <span class="filter-icon">☰</span> Filters <span id="filter-count-badge" class="filter-count-badge" style="display: none;">0</span>
             </button>
-            <!-- ====================================== -->
         </div>
+
+        <!-- ===== NEW: Quick Filters Section ===== -->
+        <section class="quick-filters" aria-label="Quick recipe filters">
+             <button class="quick-filter-tag" data-filter-type="type" data-filter-value="main course">Main Course</button>
+             <button class="quick-filter-tag" data-filter-type="type" data-filter-value="dessert">Dessert</button>
+             <button class="quick-filter-tag" data-filter-type="diet" data-filter-value="Vegetarian">Vegetarian</button>
+             <button class="quick-filter-tag" data-filter-type="cuisine" data-filter-value="Italian">Italian</button>
+             <button class="quick-filter-tag" data-filter-type="cuisine" data-filter-value="Mexican">Mexican</button>
+             <!-- Add more tags as desired -->
+        </section>
+        <!-- ===================================== -->
+
+        <!-- ===== NEW: Sort Options ===== -->
+        <div class="sort-options-container">
+            <label for="sortSelect">Sort by:</label>
+            <select id="sortSelect" name="sort">
+                <option value="meta-score">Popularity</option> <!-- Default or another like 'meta-score' -->
+                <option value="healthiness">Healthiness</option>
+                <option value="price">Price</option>
+                <option value="time">Prep Time</option>
+                <option value="calories">Calories</option>
+                <option value="protein">Protein</option>
+                <option value="fat">Fat</option>
+                <option value="carbohydrates">Carbs</option>
+                <!-- Add other sort options supported by Spoonacular -->
+            </select>
+            <!-- Optional: Sort direction button -->
+            <!-- <button id="sortDirectionButton" aria-label="Change Sort Direction">↓</button> -->
+        </div>
+        <!-- ============================ -->
 
         <!-- ===== Results Area ===== -->
         <div id="recipe-results" class="results-container">
             <!-- Recipe results will be displayed here -->
         </div>
 
+        <!-- ===== NEW: Pagination Controls ===== -->
+        <div id="pagination-controls" class="pagination-controls" style="display: none;">
+            <button id="prevPageButton" disabled>← Previous</button>
+            <span id="page-info">Page 1 of 1</span>
+            <button id="nextPageButton" disabled>Next →</button>
+        </div>
+        <!-- =================================== -->
+
     </main> <!-- End Main Content Wrapper -->
 
-    <!-- ================== NEW Filter Sidebar ================== -->
+    <!-- ================== Filter Sidebar ================== -->
     <aside id="filterSidebar" class="filter-sidebar" role="dialog" aria-modal="true" aria-labelledby="filterSidebarTitle" hidden>
         <div class="sidebar-header">
             <h2 id="filterSidebarTitle">Refine Your Search</h2>
@@ -55,17 +91,21 @@
             <div class="filter-group ingredient-filters">
                 <div class="filter-item">
                     <label for="includeIngredients">Include Ingredients:</label>
-                    <input type="text" id="includeIngredients" placeholder="e.g., chicken, tomatoes (comma-sep)">
+                    <input type="text" id="includeIngredients" placeholder="e.g., chicken, tomatoes (comma-sep)" autocomplete="off">
+                    <!-- NEW: Autocomplete suggestions container -->
+                    <div class="autocomplete-suggestions" id="include-suggestions"></div>
                 </div>
                 <div class="filter-item">
                     <label for="excludeIngredients">Exclude Ingredients:</label>
-                    <input type="text" id="excludeIngredients" placeholder="e.g., mushrooms, olives (comma-sep)">
+                    <input type="text" id="excludeIngredients" placeholder="e.g., mushrooms, olives (comma-sep)" autocomplete="off">
+                    <!-- NEW: Autocomplete suggestions container -->
+                    <div class="autocomplete-suggestions" id="exclude-suggestions"></div>
                 </div>
             </div>
 
             <!-- Group 2: Selects & Time -->
             <div class="filter-group select-filters">
-                <div class="filter-item">
+                 <div class="filter-item">
                     <label for="cuisineSelect">Cuisine:</label>
                     <select id="cuisineSelect">
                         <option value="">Any</option>
@@ -144,6 +184,7 @@
             <div class="filter-group intolerances-section">
                 <label class="group-label">Intolerances:</label>
                 <div class="intolerance-group">
+                     <!-- UPDATED: Wrapped text in span -->
                      <label><input type="checkbox" name="intolerance" value="Dairy"><span>Dairy</span></label>
                      <label><input type="checkbox" name="intolerance" value="Egg"><span>Egg</span></label>
                      <label><input type="checkbox" name="intolerance" value="Gluten"><span>Gluten</span></label>
@@ -167,7 +208,7 @@
     </aside>
     <!-- ================== End Filter Sidebar ================== -->
 
-    <!-- ===== NEW Overlay for when sidebar is open ===== -->
+    <!-- ===== Overlay for when sidebar is open ===== -->
     <div id="overlay" class="overlay" hidden></div>
     <!-- ================================================== -->
 
