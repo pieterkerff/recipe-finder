@@ -160,3 +160,35 @@ app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
     console.log('Make sure your .env file contains your SPOONACULAR_API_KEY');
 });
+
+// server.js
+
+// ... other require statements ...
+const path = require('path'); // Add path module
+
+// ... after app.use(express.json()); ...
+
+// --- Serve Static Frontend Files ---
+// Define the path to your frontend files (assuming they are in the root)
+const frontendPath = path.join(__dirname, '.'); // Adjust '.' if HTML files are in a subfolder e.g., 'public'
+app.use(express.static(frontendPath));
+
+// Catch-all to serve index.html for any route not handled by API or static files
+// This helps with potential client-side routing if you add it later
+app.get('*', (req, res) => {
+    // Check if it's likely an API path first to avoid conflicts
+    if (!req.path.startsWith('/api/')) {
+         res.sendFile(path.join(frontendPath, 'index.html'));
+    } else {
+        // If it starts with /api/ but wasn't caught by an API route, send 404
+         res.status(404).json({ error: 'API endpoint not found' });
+    }
+});
+
+// --- API Routes (Keep these as they were) ---
+app.get('/api/recipes', ...);
+app.get('/api/recipe/:id', ...);
+app.get('/api/ingredient-autocomplete', ...);
+
+// --- Start the Server (Keep this at the end) ---
+app.listen(PORT, ...);

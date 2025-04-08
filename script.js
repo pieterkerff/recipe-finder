@@ -11,9 +11,9 @@ const overlay = document.getElementById('overlay');
 const applyFiltersButton = document.getElementById('applyFiltersButton');
 const clearFiltersButton = document.getElementById('clearFiltersButton');
 const filterCountBadge = document.getElementById('filter-count-badge');
-const sortSelect = document.getElementById('sortSelect'); // NEW: Sort dropdown
-const quickFiltersContainer = document.querySelector('.quick-filters'); // NEW: Quick filters
-const paginationControls = document.getElementById('pagination-controls'); // NEW: Pagination
+const sortSelect = document.getElementById('sortSelect');
+const quickFiltersContainer = document.querySelector('.quick-filters');
+const paginationControls = document.getElementById('pagination-controls');
 const prevPageButton = document.getElementById('prevPageButton');
 const nextPageButton = document.getElementById('nextPageButton');
 const pageInfoSpan = document.getElementById('page-info');
@@ -30,18 +30,23 @@ const maxReadyTimeInput = document.getElementById('maxReadyTime');
 const intoleranceCheckboxes = document.querySelectorAll('input[name="intolerance"]');
 
 // --- API Configuration ---
-const backendBaseUrl = 'https://azealle-recipe-finder.onrender.com';
+// !!! IMPORTANT: Replace with YOUR deployed backend URL !!!
+const backendBaseUrl = 'YOUR_DEPLOYED_BACKEND_URL_HERE/api'; // e.g., 'https://my-recipe-backend.onrender.com/api'
+// !!! Make sure it's HTTPS !!!
+
+// Derive other endpoints from base URL
+const backendApiUrl = `${backendBaseUrl}/recipes`;
 const autocompleteUrl = `${backendBaseUrl}/ingredient-autocomplete`;
 
 // --- State ---
 let isSidebarOpen = false;
-let currentSearchQuery = ''; // Store the main keyword query
-let currentFilters = {}; // Store active filter values from sidebar
-let currentSort = 'meta-score'; // Default sort
+let currentSearchQuery = '';
+let currentFilters = {};
+let currentSort = 'meta-score';
 let currentPage = 1;
-const resultsPerPage = 12; // Number of recipes per page
+const resultsPerPage = 12;
 let totalResults = 0;
-let autocompleteAbortController = null; // To cancel pending autocomplete requests
+let autocompleteAbortController = null;
 
 // --- Debounce Function ---
 function debounce(func, delay) {
@@ -56,7 +61,6 @@ function debounce(func, delay) {
 
 // --- Functions ---
 
-// Function to toggle the filter sidebar
 function toggleFilterSidebar() {
     isSidebarOpen = !isSidebarOpen;
     filterSidebar.hidden = !isSidebarOpen;
@@ -68,11 +72,9 @@ function toggleFilterSidebar() {
     updateFilterCount();
 }
 
-// Function to update the filter count badge
 function updateFilterCount() {
     let count = 0;
-    // Use currentFilters state instead of reading DOM every time for badge count
-    const activeFilters = getCurrentFilters(); // Get currently set filters
+    const activeFilters = getCurrentFilters();
     if (activeFilters.includeIngredients) count++;
     if (activeFilters.excludeIngredients) count++;
     if (activeFilters.cuisine) count++;
@@ -91,7 +93,6 @@ function updateFilterCount() {
     }
 }
 
-// Function to get current filter values from sidebar DOM
 function getCurrentFilters() {
     const intolerances = Array.from(document.querySelectorAll('input[name="intolerance"]:checked'))
                             .map(cb => cb.value)
@@ -107,13 +108,11 @@ function getCurrentFilters() {
     };
 }
 
-// Function to apply filters (sets state and updates badge)
 function applyCurrentFilters() {
     currentFilters = getCurrentFilters();
     updateFilterCount();
 }
 
-// Function to clear all filters in sidebar and state
 function clearAllFilters() {
     includeIngredientsInput.value = '';
     excludeIngredientsInput.value = '';
@@ -122,25 +121,21 @@ function clearAllFilters() {
     typeSelect.value = '';
     maxReadyTimeInput.value = '';
     intoleranceCheckboxes.forEach(cb => cb.checked = false);
-    currentFilters = {}; // Clear filter state
+    currentFilters = {};
     updateFilterCount();
-    // Optional: Immediately search after clearing
-    // startSearch(true); // Trigger a new search
 }
 
-// Function to trigger visual feedback on filter button
 function showFilterAppliedFeedback() {
     filterToggleButton.classList.add('filter-applied-pulse');
     setTimeout(() => {
         filterToggleButton.classList.remove('filter-applied-pulse');
-    }, 600); // Match animation duration
+    }, 600);
 }
 
-// Main function to initiate a search (resets page, applies filters)
 function startSearch(triggeredByApply = false) {
-    currentSearchQuery = searchInput.value.trim(); // Get main keyword
-    currentPage = 1; // Reset to first page for new search/filter application
-    applyCurrentFilters(); // Store the currently selected filters
+    currentSearchQuery = searchInput.value.trim();
+    currentPage = 1;
+    applyCurrentFilters();
 
     if (triggeredByApply) {
         showFilterAppliedFeedback();
@@ -148,41 +143,22 @@ function startSearch(triggeredByApply = false) {
             toggleFilterSidebar();
         }
     }
-    fetchAndDisplayRecipes(); // Fetch the first page
+    fetchAndDisplayRecipes();
 }
 
-
-// Function to fetch recipes for the current state (page, filters, sort)
 async function fetchAndDisplayRecipes() {
     searchResultsContainer.innerHTML = '<div id="loading-message"><p>Searching for recipes...</p></div>';
-    paginationControls.style.display = 'none'; // Hide pagination while loading
+    paginationControls.style.display = 'none';
 
-    // Calculate offset for pagination
     const offset = (currentPage - 1) * resultsPerPage;
-
-    // --- Construct query parameters ---
     const params = new URLSearchParams();
-    if (currentSearchQuery) params.append('query', currentSearchQuery); // Main keyword
-
-    // Add active filters from state
-    Object.entries(currentFilters).forEach(([key, value]) => {
-        if (value) {
-            params.append(key, value);
-        }
-    });
-
-    // Add sorting
+    if (currentSearchQuery) params.append('query', currentSearchQuery);
+    Object.entries(currentFilters).forEach(([key, value]) => { if (value) { params.append(key, value); } });
     params.append('sort', currentSort);
-    // Add sortDirection if needed (e.g., for time, price) - Example:
-    // if (currentSort === 'time' || currentSort === 'price') {
-    //     params.append('sortDirection', 'asc'); // or 'desc' based on UI element
-    // }
-
-    // Add pagination
     params.append('number', resultsPerPage);
     params.append('offset', offset);
 
-    const fetchUrl = `${backendBaseUrl}/recipes?${params.toString()}`;
+    const fetchUrl = `${backendApiUrl}?${params.toString()}`; // Use derived URL
 
     try {
         console.log(`Fetching from backend: ${fetchUrl}`);
@@ -194,238 +170,117 @@ async function fetchAndDisplayRecipes() {
         }
 
         const data = await response.json();
-        totalResults = data.totalResults || 0; // Store total results count
-        displayRecipes(data.results); // Display recipes for current page
-        updatePaginationControls(); // Update pagination UI
+        totalResults = data.totalResults || 0;
+        displayRecipes(data.results);
+        updatePaginationControls();
 
     } catch (error) {
         console.error("Error fetching recipes from backend:", error);
         searchResultsContainer.innerHTML = `<p class="no-results-message">😕 Sorry, couldn't fetch recipes. Error: ${error.message}. Check the console and backend server.</p>`;
-        totalResults = 0; // Reset total results on error
-        updatePaginationControls(); // Update pagination to show error state (optional)
+        totalResults = 0;
+        updatePaginationControls();
     }
-    updateFilterCount(); // Ensure badge is accurate
+    updateFilterCount();
 }
 
-// Function to display recipes cards (Keep mostly the same, just clear container first)
 function displayRecipes(recipes) {
-    searchResultsContainer.innerHTML = ''; // Clear loading/previous
+    searchResultsContainer.innerHTML = '';
 
     if (!recipes || recipes.length === 0) {
-        if (currentPage === 1) { // Only show 'no results' on the first page
-           searchResultsContainer.innerHTML = '<p class="no-results-message">😕 No recipes found matching your criteria. Try broadening your search!</p>';
-        } else {
-            // Optional: Could indicate "no more results" on later pages
-             searchResultsContainer.innerHTML = '<p class="no-results-message">End of results.</p>';
-        }
+        searchResultsContainer.innerHTML = currentPage === 1
+            ? '<p class="no-results-message">😕 No recipes found matching your criteria. Try broadening your search!</p>'
+            : '<p class="no-results-message">End of results.</p>';
         return;
     }
 
-    // (Keep the rest of the card creation logic from previous version)
     recipes.forEach((recipe, index) => {
         const recipeCard = document.createElement('div');
         recipeCard.classList.add('recipe-card');
         recipeCard.style.animationDelay = `${index * 0.08}s`;
-
-        const link = document.createElement('a');
-        link.href = `recipe.html?id=${recipe.id}`;
-
-        const image = document.createElement('img');
-        image.src = recipe.image || 'placeholder.jpg';
-        image.alt = recipe.title;
-        image.loading = 'lazy';
-        link.appendChild(image);
-
-        const textContentDiv = document.createElement('div');
-        textContentDiv.classList.add('card-content');
-
-        const title = document.createElement('h3');
-        title.textContent = recipe.title;
-        textContentDiv.appendChild(title);
-
-        const metaInfoDiv = document.createElement('div');
-        metaInfoDiv.classList.add('card-meta');
-        if (recipe.readyInMinutes) { /* Add time */
-            const timeSpan = document.createElement('span'); timeSpan.classList.add('card-meta-item', 'time'); timeSpan.innerHTML = `<span>⏰</span> ${recipe.readyInMinutes} min`; metaInfoDiv.appendChild(timeSpan);
-        }
-        if (recipe.servings) { /* Add servings */
-            const servingsSpan = document.createElement('span'); servingsSpan.classList.add('card-meta-item', 'servings'); servingsSpan.innerHTML = `<span>👥</span> ${recipe.servings} servings`; metaInfoDiv.appendChild(servingsSpan);
-        }
+        const link = document.createElement('a'); link.href = `recipe.html?id=${recipe.id}`;
+        const image = document.createElement('img'); image.src = recipe.image || 'placeholder.jpg'; image.alt = recipe.title; image.loading = 'lazy'; link.appendChild(image);
+        const textContentDiv = document.createElement('div'); textContentDiv.classList.add('card-content');
+        const title = document.createElement('h3'); title.textContent = recipe.title; textContentDiv.appendChild(title);
+        const metaInfoDiv = document.createElement('div'); metaInfoDiv.classList.add('card-meta');
+        if (recipe.readyInMinutes) { const t = document.createElement('span'); t.classList.add('card-meta-item', 'time'); t.innerHTML = `<span>⏰</span> ${recipe.readyInMinutes} min`; metaInfoDiv.appendChild(t); }
+        if (recipe.servings) { const s = document.createElement('span'); s.classList.add('card-meta-item', 'servings'); s.innerHTML = `<span>👥</span> ${recipe.servings} servings`; metaInfoDiv.appendChild(s); }
         if (metaInfoDiv.hasChildNodes()){ textContentDiv.appendChild(metaInfoDiv); }
-
         const dietaryIconsDiv = document.createElement('div'); dietaryIconsDiv.classList.add('card-dietary-icons'); let addedIcon = false;
         if (recipe.vegetarian) { const i=document.createElement('span'); i.classList.add('diet-icon', 'veg'); i.title='Vegetarian'; i.textContent=' V '; dietaryIconsDiv.appendChild(i); addedIcon = true; }
         if (recipe.vegan) { const i=document.createElement('span'); i.classList.add('diet-icon', 'vegan'); i.title='Vegan'; i.textContent=' Vg '; dietaryIconsDiv.appendChild(i); addedIcon = true; }
         if (recipe.glutenFree) { const i=document.createElement('span'); i.classList.add('diet-icon', 'gf'); i.title='Gluten Free'; i.textContent=' GF '; dietaryIconsDiv.appendChild(i); addedIcon = true; }
         if (addedIcon) { textContentDiv.appendChild(dietaryIconsDiv); }
-
         link.appendChild(textContentDiv);
         recipeCard.appendChild(link);
         searchResultsContainer.appendChild(recipeCard);
     });
 }
 
-// --- Autocomplete Functions ---
 const handleIngredientAutocomplete = debounce(async (inputElement, suggestionsContainer) => {
     const query = inputElement.value.trim();
-    suggestionsContainer.innerHTML = ''; // Clear previous suggestions
-    suggestionsContainer.style.display = 'none';
-
-    if (query.length < 2) { // Only search if query is long enough
-        return;
-    }
-
-    // Abort previous request if any
-    if (autocompleteAbortController) {
-        autocompleteAbortController.abort();
-    }
+    suggestionsContainer.innerHTML = ''; suggestionsContainer.style.display = 'none';
+    if (query.length < 2) return;
+    if (autocompleteAbortController) autocompleteAbortController.abort();
     autocompleteAbortController = new AbortController();
     const signal = autocompleteAbortController.signal;
 
     try {
-        const response = await fetch(`${backendBaseUrl}/ingredient-autocomplete?query=${encodeURIComponent(query)}`, { signal });
+        // Use derived autocompleteUrl
+        const response = await fetch(`${autocompleteUrl}?query=${encodeURIComponent(query)}`, { signal });
         if (!response.ok) { throw new Error('Autocomplete fetch failed'); }
         const suggestions = await response.json();
         displayAutocompleteSuggestions(suggestions, inputElement, suggestionsContainer);
     } catch (error) {
-        if (error.name === 'AbortError') {
-            console.log('Autocomplete fetch aborted');
-        } else {
-            console.error("Error fetching autocomplete suggestions:", error);
-        }
+        if (error.name !== 'AbortError') console.error("Error fetching autocomplete:", error);
     }
-}, 300); // 300ms debounce delay
+}, 300);
 
 function displayAutocompleteSuggestions(suggestions, inputElement, suggestionsContainer) {
-    suggestionsContainer.innerHTML = ''; // Clear again just in case
+    suggestionsContainer.innerHTML = '';
     if (suggestions && suggestions.length > 0) {
         const ul = document.createElement('ul');
         suggestions.forEach(suggestion => {
-            const li = document.createElement('li');
-            li.textContent = suggestion.name;
+            const li = document.createElement('li'); li.textContent = suggestion.name;
             li.addEventListener('click', () => {
-                // Append suggestion to existing comma-separated list or replace
-                const currentValue = inputElement.value.trim();
-                const parts = currentValue.split(',').map(p => p.trim()).filter(p => p !== '');
-                // If clicking a suggestion, replace the last part being typed
-                if (parts.length > 0 && currentValue.slice(-1) !== ',') {
-                    parts[parts.length - 1] = suggestion.name; // Replace last part
-                } else {
-                    parts.push(suggestion.name); // Add new ingredient
-                }
-                inputElement.value = parts.join(', ') + ', '; // Join and add comma/space
-                suggestionsContainer.innerHTML = ''; // Clear suggestions
-                suggestionsContainer.style.display = 'none';
-                inputElement.focus(); // Return focus
+                const currentValue = inputElement.value.trim(); const parts = currentValue.split(',').map(p => p.trim()).filter(p => p !== '');
+                if (parts.length > 0 && !currentValue.endsWith(',')) { parts[parts.length - 1] = suggestion.name; }
+                else { parts.push(suggestion.name); }
+                inputElement.value = parts.join(', ') + ', ';
+                suggestionsContainer.innerHTML = ''; suggestionsContainer.style.display = 'none'; inputElement.focus();
             });
             ul.appendChild(li);
         });
-        suggestionsContainer.appendChild(ul);
-        suggestionsContainer.style.display = 'block';
-    } else {
-        suggestionsContainer.style.display = 'none';
-    }
+        suggestionsContainer.appendChild(ul); suggestionsContainer.style.display = 'block';
+    } else { suggestionsContainer.style.display = 'none'; }
 }
 
-// --- Pagination Update Function ---
 function updatePaginationControls() {
-    if (totalResults <= resultsPerPage) {
-        paginationControls.style.display = 'none'; // Hide if only one page or less
-        return;
-    }
-
-    paginationControls.style.display = 'flex'; // Show controls
+    if (totalResults <= resultsPerPage) { paginationControls.style.display = 'none'; return; }
+    paginationControls.style.display = 'flex';
     const totalPages = Math.ceil(totalResults / resultsPerPage);
-
     pageInfoSpan.textContent = `Page ${currentPage} of ${totalPages}`;
-
     prevPageButton.disabled = (currentPage === 1);
     nextPageButton.disabled = (currentPage === totalPages);
 }
 
-
 // --- Event Listeners ---
-
-// Main search button
 searchButton.addEventListener('click', () => startSearch(false));
-
-// Trigger main search on Enter in main input
-searchInput.addEventListener('keypress', (event) => {
-    if (event.key === 'Enter') { startSearch(false); }
-});
-
-// Filter sidebar toggle button
+searchInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') startSearch(false); });
 filterToggleButton.addEventListener('click', toggleFilterSidebar);
 closeFilterSidebarButton.addEventListener('click', toggleFilterSidebar);
 overlay.addEventListener('click', toggleFilterSidebar);
-
-// Apply filters button inside sidebar
 applyFiltersButton.addEventListener('click', () => startSearch(true));
-
-// Clear filters button inside sidebar
 clearFiltersButton.addEventListener('click', clearAllFilters);
-
-// Update filter count badge whenever a filter input changes IN THE SIDEBAR
-document.querySelectorAll('#filterSidebar input, #filterSidebar select').forEach(input => {
-    input.addEventListener('change', updateFilterCount);
-});
-
-// Close sidebar on Escape key press
-document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape' && isSidebarOpen) { toggleFilterSidebar(); }
-});
-
-// Sort select change listener
-sortSelect.addEventListener('change', (event) => {
-    currentSort = event.target.value;
-    currentPage = 1; // Reset to page 1 when sort changes
-    fetchAndDisplayRecipes();
-});
-
-// Pagination button listeners
-prevPageButton.addEventListener('click', () => {
-    if (currentPage > 1) {
-        currentPage--;
-        fetchAndDisplayRecipes();
-    }
-});
-nextPageButton.addEventListener('click', () => {
-    const totalPages = Math.ceil(totalResults / resultsPerPage);
-    if (currentPage < totalPages) {
-        currentPage++;
-        fetchAndDisplayRecipes();
-    }
-});
-
-// Quick Filter tag listeners (using event delegation)
-quickFiltersContainer.addEventListener('click', (event) => {
-    if (event.target.classList.contains('quick-filter-tag')) {
-        const filterType = event.target.dataset.filterType;
-        const filterValue = event.target.dataset.filterValue;
-
-        // Clear existing filters first? Or just apply this one? Let's just apply.
-        // clearAllFilters(); // Optional: uncomment to clear before applying quick filter
-
-        if (filterType === 'cuisine') cuisineSelect.value = filterValue;
-        if (filterType === 'diet') dietSelect.value = filterValue;
-        if (filterType === 'type') typeSelect.value = filterValue;
-
-        startSearch(false); // Start search, don't indicate it was sidebar apply
-    }
-});
-
-// Autocomplete listeners
-includeIngredientsInput.addEventListener('input', () => {
-    handleIngredientAutocomplete(includeIngredientsInput, includeSuggestionsContainer);
-});
-excludeIngredientsInput.addEventListener('input', () => {
-    handleIngredientAutocomplete(excludeIngredientsInput, excludeSuggestionsContainer);
-});
-// Hide autocomplete suggestions on input blur
-includeIngredientsInput.addEventListener('blur', () => setTimeout(() => { includeSuggestionsContainer.style.display = 'none'; }, 150)); // Delay allows click
+document.querySelectorAll('#filterSidebar input, #filterSidebar select').forEach(input => { input.addEventListener('change', updateFilterCount); });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && isSidebarOpen) toggleFilterSidebar(); });
+sortSelect.addEventListener('change', (e) => { currentSort = e.target.value; currentPage = 1; fetchAndDisplayRecipes(); });
+prevPageButton.addEventListener('click', () => { if (currentPage > 1) { currentPage--; fetchAndDisplayRecipes(); } });
+nextPageButton.addEventListener('click', () => { const totalPages = Math.ceil(totalResults / resultsPerPage); if (currentPage < totalPages) { currentPage++; fetchAndDisplayRecipes(); } });
+quickFiltersContainer.addEventListener('click', (e) => { if (e.target.classList.contains('quick-filter-tag')) { const type = e.target.dataset.filterType; const value = e.target.dataset.filterValue; if (type === 'cuisine') cuisineSelect.value = value; if (type === 'diet') dietSelect.value = value; if (type === 'type') typeSelect.value = value; startSearch(false); } });
+includeIngredientsInput.addEventListener('input', () => handleIngredientAutocomplete(includeIngredientsInput, includeSuggestionsContainer));
+excludeIngredientsInput.addEventListener('input', () => handleIngredientAutocomplete(excludeIngredientsInput, excludeSuggestionsContainer));
+includeIngredientsInput.addEventListener('blur', () => setTimeout(() => { includeSuggestionsContainer.style.display = 'none'; }, 150));
 excludeIngredientsInput.addEventListener('blur', () => setTimeout(() => { excludeSuggestionsContainer.style.display = 'none'; }, 150));
 
 // --- Initial Load ---
-updateFilterCount(); // Initial count check (should be 0)
-// Optional: Trigger an initial empty search or display placeholder
-// searchResultsContainer.innerHTML = '<p id="initial-placeholder">Enter search criteria above and click Search!</p>';
+updateFilterCount();
