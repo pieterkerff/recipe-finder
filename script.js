@@ -31,7 +31,7 @@ const intoleranceCheckboxes = document.querySelectorAll('input[name="intolerance
 
 // --- API Configuration ---
 // !!! IMPORTANT: Replace with YOUR deployed backend URL !!!
-const backendBaseUrl = 'YOUR_DEPLOYED_BACKEND_URL_HERE/api'; // e.g., 'https://my-recipe-backend.onrender.com/api'
+const backendBaseUrl = 'https://azealle-recipe-finder.onrender.com/api'; // e.g., 'https://my-recipe-backend.onrender.com/api'
 // !!! Make sure it's HTTPS !!!
 
 // Derive other endpoints from base URL
