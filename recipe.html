@@ -19,9 +19,7 @@
         <div class="recipe-detail-container">
             <div class="detail-page-header"> <!-- Wrapper for back/print -->
                 <a href="index.html" class="back-link">Back to Search</a>
-                <!-- ===== NEW: Print Button ===== -->
                 <button id="printRecipeButton" class="button-secondary print-button">🖨️ Print Recipe</button>
-                 <!-- ============================ -->
             </div>
 
             <div id="loading-message"><p>Loading recipe details...</p></div>
@@ -32,9 +30,10 @@
                 <img id="recipe-image" src="" alt="Recipe Image" loading="lazy">
 
                 <div class="recipe-meta">
-                     <span id="recipe-servings">Servings: -</span>
-                     <span id="recipe-time">Ready in: - minutes</span>
-                     <span id="recipe-source">Source: <a href="#" target="_blank" rel="noopener noreferrer">-</a></span>
+                     <!-- Added titles for tooltips -->
+                     <span id="recipe-servings" title="Servings">Servings: -</span>
+                     <span id="recipe-time" title="Ready in Minutes">Ready in: - minutes</span>
+                     <span id="recipe-source" title="Recipe Source">Source: <a href="#" target="_blank" rel="noopener noreferrer">-</a></span>
                 </div>
 
                 <div id="recipe-summary" class="recipe-section" style="display: none;">
@@ -44,7 +43,7 @@
 
                 <div class="recipe-section">
                     <h2>Ingredients</h2>
-                    <ul id="recipe-ingredients" class="ingredient-checklist"> <!-- Added class -->
+                    <ul id="recipe-ingredients" class="ingredient-checklist">
                         <!-- Ingredient list items here -->
                     </ul>
                 </div>
@@ -71,6 +70,12 @@
         <p>© <span id="year-detail"></span> Recipe Finder. Enjoy your meal!</p>
     </footer>
     <!-- ======================= -->
+
+     <!-- ===== NEW: Scroll To Top Button ===== -->
+     <button id="scrollToTopBtn" class="scroll-to-top-btn" title="Go to top" hidden>
+         <span>↑</span> <!-- Up arrow -->
+     </button>
+     <!-- =================================== -->
 
     <!-- Link to the JavaScript file for this page -->
     <script src="recipe.js" defer></script>
