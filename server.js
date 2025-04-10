@@ -1,10 +1,11 @@
-// server.js (Backend API Proxy with Caching and Autocomplete)
+// server.js (Backend API Proxy with Caching, Autocomplete, and Static File Serving Option)
 
 require('dotenv').config();
 const express = require('express');
 const fetch = require('node-fetch'); // Using node-fetch v2
 const cors = require('cors');
-const cache = require('memory-cache'); // NEW: Caching library
+const cache = require('memory-cache'); // Caching library
+const path = require('path'); // Needed for serving static files
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -34,33 +35,64 @@ async function makeSpoonacularRequest(apiUrl, cacheDurationMinutes = 10) { // De
     console.log(`Fetching from Spoonacular: ${apiUrl.replace(apiKey, '***HIDDEN***')}`);
     try {
         const response = await fetch(apiUrl);
-        const data = await response.json();
+        // Try parsing JSON first in case of API error messages in JSON format
+        let data;
+        try {
+            data = await response.json();
+        } catch (jsonError) {
+            // If response is not JSON (e.g., plain text error or empty)
+            if (!response.ok) {
+                 // If status is bad and not JSON, throw a generic error
+                 const error = new Error(`Spoonacular API Error: ${response.status} ${response.statusText}`);
+                 error.status = response.status;
+                 throw error;
+            }
+            // If status is ok but not JSON (unlikely for Spoonacular), handle as needed
+             data = {}; // Or throw an error, depending on expectations
+        }
+
 
         if (!response.ok) {
             console.error(`Spoonacular API Error: ${response.status} ${response.statusText}`);
             console.error("Spoonacular Response Body:", data);
+            // Use the message from Spoonacular's response if available
             const errorMessage = data?.message || `Spoonacular error ${response.status}`;
             const error = new Error(errorMessage);
-            error.status = response.status;
+            error.status = response.status; // Attach status code to error object
             throw error;
         }
 
-        // Cache the successful response
+        // Cache the successful response only if duration > 0
         const cacheDurationMs = cacheDurationMinutes * 60 * 1000;
-        cache.put(cacheKey, data, cacheDurationMs);
-        console.log(`Cached response for ${cacheDurationMinutes} mins.`);
+        if (cacheDurationMs > 0) {
+             cache.put(cacheKey, data, cacheDurationMs);
+             console.log(`Cached response for ${cacheDurationMinutes} mins.`);
+        }
 
-        return data; // Return fresh data
+        return data; // Return successful data
 
     } catch (error) {
+        // Catch fetch errors (network issues) or errors thrown above
         console.error("Error during Spoonacular fetch:", error);
-        throw error; // Re-throw to be caught by route handler
+        // Re-throw the error to be caught by the route handler
+        throw error;
     }
 }
 
+// ==============================================================================
+// Option B: Serve Static Frontend Files from Node.js (If NOT using separate Static Site hosting)
+// If you deployed frontend separately on Render (Option A), you can COMMENT OUT or DELETE this section.
+// ------------------------------------------------------------------------------
+const frontendPath = path.join(__dirname, '.'); // Assumes HTML/CSS/JS are in the project root
+console.log(`Serving static files from: ${frontendPath}`);
+app.use(express.static(frontendPath));
+// ==============================================================================
 
-// --- Endpoint for Complex Recipe Search (Handles Sort, Pagination) ---
-app.get('/api/recipes', async (req, res) => {
+
+// --- API Routes ---
+
+// Endpoint for Complex Recipe Search (Handles Sort, Pagination)
+app.get('/api/recipes', async (req, res) => { // <-- RESTORED FUNCTION BODY
     try {
         const baseUrl = 'https://api.spoonacular.com/recipes/complexSearch';
         const params = new URLSearchParams({
@@ -96,15 +128,16 @@ app.get('/api/recipes', async (req, res) => {
 
     } catch (error) {
         console.error("Error in /api/recipes route:", error.message);
+        // Send back the status code from the Spoonacular error if available
         res.status(error.status || 500).json({ error: error.message || 'An unexpected error occurred on the server searching recipes.' });
     }
 });
 
-// --- Endpoint for Getting Recipe Details by ID (Cached) ---
-app.get('/api/recipe/:id', async (req, res) => {
+// Endpoint for Getting Recipe Details by ID (Cached)
+app.get('/api/recipe/:id', async (req, res) => { // <-- RESTORED FUNCTION BODY
     const recipeId = req.params.id;
 
-    if (!recipeId || isNaN(parseInt(recipeId))) {
+    if (!recipeId || isNaN(parseInt(recipeId))) { // Basic ID validation
          return res.status(400).json({ error: 'Valid Recipe ID parameter is required' });
     }
 
@@ -112,13 +145,13 @@ app.get('/api/recipe/:id', async (req, res) => {
         const baseUrl = `https://api.spoonacular.com/recipes/${recipeId}/information`;
         const params = new URLSearchParams({
              apiKey: apiKey,
-             includeNutrition: true
+             includeNutrition: true // Get nutrition details
         });
 
         const spoonacularUrl = `${baseUrl}?${params.toString()}`;
         // Cache details longer, e.g., 30 minutes
         const recipeDetails = await makeSpoonacularRequest(spoonacularUrl, 30);
-        res.json(recipeDetails);
+        res.json(recipeDetails); // Send the full recipe details object back
 
     } catch (error) {
         console.error(`Error in /api/recipe/${recipeId} route:`, error.message);
@@ -126,8 +159,8 @@ app.get('/api/recipe/:id', async (req, res) => {
     }
 });
 
-// --- NEW Endpoint for Ingredient Autocomplete ---
-app.get('/api/ingredient-autocomplete', async (req, res) => {
+// Endpoint for Ingredient Autocomplete
+app.get('/api/ingredient-autocomplete', async (req, res) => { // <-- RESTORED FUNCTION BODY
     const query = req.query.query;
     const number = req.query.number || 5; // Limit suggestions
 
@@ -155,40 +188,39 @@ app.get('/api/ingredient-autocomplete', async (req, res) => {
 });
 
 
+// ==============================================================================
+// Option B: Catch-all for Frontend Routes (If NOT using separate Static Site hosting)
+// If you deployed frontend separately (Option A), COMMENT OUT or DELETE this section.
+// This serves index.html for any non-API request, supporting client-side routing if needed.
+// IMPORTANT: Place this AFTER all your API routes.
+// ------------------------------------------------------------------------------
+app.get('*', (req, res, next) => { // Added next parameter
+    // Check if the request looks like an API call first
+    if (req.path.startsWith('/api/')) {
+        // If it starts with /api/ but wasn't caught, let a later error handler deal with it, or send 404 now
+         // console.log(`API endpoint not found: ${req.path}`);
+         // res.status(404).json({ error: 'API endpoint not found' });
+         // OR better, just pass control
+         return next();
+    }
+    // Otherwise, assume it's a frontend route and serve index.html
+    const indexPath = path.join(frontendPath, 'index.html');
+     console.log(`Serving index.html for path: ${req.path}`);
+     res.sendFile(indexPath, (err) => {
+         if (err) {
+             console.error("Error sending index.html:", err);
+             // Avoid sending another response if headers might be sent
+             if (!res.headersSent) {
+                 res.status(500).send("Error loading page.");
+             }
+         }
+     });
+});
+// ==============================================================================
+
+
 // --- Start the Server ---
 app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
+    console.log(`Server is running on http://localhost:${PORT} or assigned Render port`);
     console.log('Make sure your .env file contains your SPOONACULAR_API_KEY');
 });
-
-// server.js
-
-// ... other require statements ...
-const path = require('path'); // Add path module
-
-// ... after app.use(express.json()); ...
-
-// --- Serve Static Frontend Files ---
-// Define the path to your frontend files (assuming they are in the root)
-const frontendPath = path.join(__dirname, '.'); // Adjust '.' if HTML files are in a subfolder e.g., 'public'
-app.use(express.static(frontendPath));
-
-// Catch-all to serve index.html for any route not handled by API or static files
-// This helps with potential client-side routing if you add it later
-app.get('*', (req, res) => {
-    // Check if it's likely an API path first to avoid conflicts
-    if (!req.path.startsWith('/api/')) {
-         res.sendFile(path.join(frontendPath, 'index.html'));
-    } else {
-        // If it starts with /api/ but wasn't caught by an API route, send 404
-         res.status(404).json({ error: 'API endpoint not found' });
-    }
-});
-
-// --- API Routes (Keep these as they were) ---
-app.get('/api/recipes', ...);
-app.get('/api/recipe/:id', ...);
-app.get('/api/ingredient-autocomplete', ...);
-
-// --- Start the Server (Keep this at the end) ---
-app.listen(PORT, ...);
