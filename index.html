@@ -27,13 +27,14 @@
         <!-- ================================== -->
 
         <div class="search-container">
+            <!-- UPDATED: Added wrapper and clear button -->
             <div class="input-with-clear">
-                 <input type="text" id="searchInput" placeholder="Search recipes by keyword..." aria-label="Search recipes by keyword">
+                 <input type="text" id="searchInput" placeholder="Search recipes by keyword...">
                  <button class="clear-input-btn" id="clearSearchBtn" aria-label="Clear search input" hidden>×</button>
             </div>
-            <button id="searchButton" aria-label="Submit recipe search">Search</button>
-            <button id="filterToggleButton" class="filter-button" aria-label="Open advanced recipe filters" aria-haspopup="dialog" aria-expanded="false">
-                <span class="filter-icon" aria-hidden="true">☰</span> Filters <span id="filter-count-badge" class="filter-count-badge" style="display: none;" aria-label="Number of active filters">0</span>
+            <button id="searchButton">Search</button>
+            <button id="filterToggleButton" class="filter-button" aria-label="Open Filters" aria-haspopup="true" aria-expanded="false">
+                <span class="filter-icon">☰</span> Filters <span id="filter-count-badge" class="filter-count-badge" style="display: none;">0</span>
             </button>
         </div>
 
@@ -50,7 +51,7 @@
         <!-- ===== Sort Options ===== -->
         <div class="sort-options-container">
             <label for="sortSelect">Sort by:</label>
-            <select id="sortSelect" name="sort" aria-label="Sort recipe results">
+            <select id="sortSelect" name="sort">
                 <option value="meta-score">Popularity</option>
                 <option value="healthiness">Healthiness</option>
                 <option value="price">Price</option>
@@ -64,9 +65,8 @@
         <!-- ============================ -->
 
         <!-- ===== Results Area ===== -->
-        <!-- Added aria-live -->
-        <div id="recipe-results" class="results-container" aria-live="polite">
-            <!-- Skeleton Loader Structure -->
+        <div id="recipe-results" class="results-container">
+            <!-- Skeleton Loader Structure (Hidden by default with CSS potentially) -->
             <div class="skeleton-loader">
                 <div class="skeleton-card"> <div class="skeleton-img"></div> <div class="skeleton-text"></div> <div class="skeleton-text short"></div> </div>
                 <div class="skeleton-card"> <div class="skeleton-img"></div> <div class="skeleton-text"></div> <div class="skeleton-text short"></div> </div>
@@ -76,16 +76,14 @@
                 <div class="skeleton-card"> <div class="skeleton-img"></div> <div class="skeleton-text"></div> <div class="skeleton-text short"></div> </div>
             </div>
             <!-- Real results will replace this -->
-             <!-- Initial placeholder message container, role status added in JS -->
-             <p id="initial-placeholder" role="status">Enter search criteria above or use filters to find recipes!</p>
         </div>
 
         <!-- ===== Pagination Controls ===== -->
-        <nav id="pagination-controls" class="pagination-controls" aria-label="Recipe results pagination" style="display: none;">
-            <button id="prevPageButton" disabled aria-label="Go to previous page of results">← Previous</button>
-            <span id="page-info" role="status">Page 1 of 1</span>
-            <button id="nextPageButton" disabled aria-label="Go to next page of results">Next →</button>
-        </nav>
+        <div id="pagination-controls" class="pagination-controls" style="display: none;">
+            <button id="prevPageButton" disabled>← Previous</button>
+            <span id="page-info">Page 1 of 1</span>
+            <button id="nextPageButton" disabled>Next →</button>
+        </div>
         <!-- =================================== -->
 
     </main> <!-- End Main Content Wrapper -->
@@ -102,16 +100,18 @@
             <div class="filter-group ingredient-filters">
                 <div class="filter-item">
                     <label for="includeIngredients">Include Ingredients:</label>
+                    <!-- UPDATED: Added wrapper and clear button -->
                     <div class="input-with-clear">
-                        <input type="text" id="includeIngredients" placeholder="e.g., chicken, tomatoes (comma-sep)" autocomplete="off" aria-label="Ingredients to include in recipes">
+                        <input type="text" id="includeIngredients" placeholder="e.g., chicken, tomatoes (comma-sep)" autocomplete="off">
                         <button class="clear-input-btn" id="clearIncludeBtn" aria-label="Clear include ingredients" hidden>×</button>
                     </div>
                     <div class="autocomplete-suggestions" id="include-suggestions"></div>
                 </div>
                 <div class="filter-item">
                     <label for="excludeIngredients">Exclude Ingredients:</label>
+                    <!-- UPDATED: Added wrapper and clear button -->
                      <div class="input-with-clear">
-                        <input type="text" id="excludeIngredients" placeholder="e.g., mushrooms, olives (comma-sep)" autocomplete="off" aria-label="Ingredients to exclude from recipes">
+                        <input type="text" id="excludeIngredients" placeholder="e.g., mushrooms, olives (comma-sep)" autocomplete="off">
                         <button class="clear-input-btn" id="clearExcludeBtn" aria-label="Clear exclude ingredients" hidden>×</button>
                      </div>
                     <div class="autocomplete-suggestions" id="exclude-suggestions"></div>
@@ -120,16 +120,17 @@
 
             <!-- Group 2: Selects & Time -->
             <div class="filter-group select-filters">
-                 <div class="filter-item"> <label for="cuisineSelect">Cuisine:</label> <select id="cuisineSelect" aria-label="Filter by cuisine"> <option value="">Any</option> <option value="African">African</option> <!-- ... other options ... --> <option value="Vietnamese">Vietnamese</option> </select> </div>
-                <div class="filter-item"> <label for="dietSelect">Diet:</label> <select id="dietSelect" aria-label="Filter by diet"> <option value="">Any</option> <option value="Gluten Free">Gluten Free</option> <!-- ... other options ... --> <option value="Whole30">Whole30</option> </select> </div>
-                <div class="filter-item"> <label for="typeSelect">Meal Type:</label> <select id="typeSelect" aria-label="Filter by meal type"> <option value="">Any</option> <option value="main course">Main Course</option> <!-- ... other options ... --> <option value="drink">Drink</option> </select> </div>
-                <div class="filter-item"> <label for="maxReadyTime">Max Time (min):</label> <input type="number" id="maxReadyTime" min="0" placeholder="e.g., 30" aria-label="Maximum preparation and cook time in minutes"> </div>
-            </div>
+                 <div class="filter-item"> <label for="cuisineSelect">Cuisine:</label> <select id="cuisineSelect"> <option value="">Any</option> <option value="African">African</option> <option value="Asian">Asian</option> <option value="American">American</option> <option value="British">British</option> <option value="Cajun">Cajun</option> <option value="Caribbean">Caribbean</option> <option value="Chinese">Chinese</option> <option value="European">European</option> <option value="French">French</option> <option value="German">German</option> <option value="Greek">Greek</option> <option value="Indian">Indian</option> <option value="Irish">Irish</option> <option value="Italian">Italian</option> <option value="Japanese">Japanese</option> <option value="Jewish">Jewish</option> <option value="Korean">Korean</option> <option value="Latin American">Latin American</option> <option value="Mediterranean">Mediterranean</option> <option value="Mexican">Mexican</option> <option value="Middle Eastern">Middle Eastern</option> <option value="Nordic">Nordic</option> <option value="Southern">Southern</option> <option value="Spanish">Spanish</option> <option value="Thai">Thai</option> <option value="Vietnamese">Vietnamese</option> </select> </div>
+                <div class="filter-item"> <label for="dietSelect">Diet:</label> <select id="dietSelect"> <option value="">Any</option> <option value="Gluten Free">Gluten Free</option> <option value="Ketogenic">Ketogenic</option> <option value="Vegetarian">Vegetarian</option> <option value="Lacto-Vegetarian">Lacto-Vegetarian</option> <option value="Ovo-Vegetarian">Ovo-Vegetarian</option> <option value="Vegan">Vegan</option> <option value="Pescetarian">Pescetarian</option> <option value="Paleo">Paleo</option> <option value="Primal">Primal</option> <option value="Low FODMAP">Low FODMAP</option> <option value="Whole30">Whole30</option> </select> </div>
+                <div class="filter-item"> <label for="typeSelect">Meal Type:</label> <select id="typeSelect"> <option value="">Any</option> <option value="main course">Main Course</option> <option value="side dish">Side Dish</option> <option value="dessert">Dessert</option> <option value="appetizer">Appetizer</option> <option value="salad">Salad</option> <option value="bread">Bread</option> <option value="breakfast">Breakfast</option> <option value="soup">Soup</option> <option value="beverage">Beverage</option> <option value="sauce">Sauce</option> <option value="marinade">Marinade</option> <option value="fingerfood">Fingerfood</option> <option value="snack">Snack</option> <option value="drink">Drink</option> </select> </div>
+                <div class="filter-item"> <label for="maxReadyTime">Max Time (min):</label> <input type="number" id="maxReadyTime" min="0" placeholder="e.g., 30"> </div>
+            </div> <!-- End filter-group select-filters -->
 
             <!-- Group 3: Intolerances -->
-            <fieldset class="filter-group intolerances-section"> <!-- Changed div to fieldset -->
-                <legend class="group-label">Intolerances:</legend> <!-- Changed label to legend -->
+            <div class="filter-group intolerances-section">
+                <label class="group-label">Intolerances:</label>
                 <div class="intolerance-group">
+                     <!-- Text wrapped in spans -->
                      <label><input type="checkbox" name="intolerance" value="Dairy"><span>Dairy</span></label>
                      <label><input type="checkbox" name="intolerance" value="Egg"><span>Egg</span></label>
                      <label><input type="checkbox" name="intolerance" value="Gluten"><span>Gluten</span></label>
@@ -143,7 +144,7 @@
                      <label><input type="checkbox" name="intolerance" value="Tree Nut"><span>Tree Nut</span></label>
                      <label><input type="checkbox" name="intolerance" value="Wheat"><span>Wheat</span></label>
                 </div>
-             </fieldset> <!-- End fieldset -->
+             </div> <!-- End intolerances-section -->
         </div> <!-- End sidebar-content -->
 
         <div class="sidebar-footer">
@@ -163,15 +164,11 @@
     </footer>
     <!-- ======================= -->
 
-    <!-- ===== Scroll To Top Button ===== -->
-    <button id="scrollToTopBtn" class="scroll-to-top-btn" title="Go to top" aria-label="Scroll back to top" hidden>
-        <span aria-hidden="true">↑</span> <!-- Hide arrow from screen reader -->
+    <!-- ===== NEW: Scroll To Top Button ===== -->
+    <button id="scrollToTopBtn" class="scroll-to-top-btn" title="Go to top" hidden>
+        <span>↑</span> <!-- Up arrow -->
     </button>
     <!-- =================================== -->
-
-     <!-- ===== Status message container for screen readers ===== -->
-     <div class="status-message" id="statusMessage" role="status" aria-live="polite"></div>
-     <!-- ========================================================== -->
 
     <!-- Link to your JavaScript file -->
     <script src="script.js" defer></script>
