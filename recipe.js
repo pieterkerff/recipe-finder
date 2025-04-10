@@ -1,4 +1,4 @@
-// recipe.js - Handles fetching and displaying recipe details, print, checklist
+// recipe.js - Handles fetching and displaying recipe details, print, checklist, scroll-to-top
 
 document.addEventListener('DOMContentLoaded', () => {
     // --- DOM Elements ---
@@ -8,19 +8,37 @@ document.addEventListener('DOMContentLoaded', () => {
     const recipeContent = document.getElementById('recipe-content');
     const printButton = document.getElementById('printRecipeButton');
     const ingredientsList = document.getElementById('recipe-ingredients');
+    const scrollToTopBtn = document.getElementById('scrollToTopBtn'); // NEW
 
     // --- API Configuration ---
     // !!! IMPORTANT: Replace with YOUR deployed backend URL !!!
     const backendBaseUrl = 'https://azealle-recipe-finder.onrender.com/api'; // e.g., 'https://my-recipe-backend.onrender.com/api'
     // !!! Make sure it's HTTPS !!!
 
-    // Function to display errors
-    function showError(message) {
+    // Function to display errors (Enhanced)
+    function showError(error) {
+        console.error("Error fetching recipe details:", error);
         loadingMessage.style.display = 'none';
         recipeContent.style.display = 'none';
-        errorText.textContent = `Error: ${message}. Please try going back or searching again.`;
+
+        let userMessage = `😕 Sorry, couldn't load recipe details. An unexpected error occurred.`; // Default
+        if (error.message) {
+            const lowerCaseError = error.message.toLowerCase();
+            if (lowerCaseError.includes('quota') || lowerCaseError.includes('limit')) {
+                userMessage = "📋 Sorry, the daily recipe lookup limit has been reached. Please try again tomorrow!";
+            } else if (lowerCaseError.includes('api key') || error.status === 401 || error.status === 403) {
+                userMessage = "🔑 Oops! There seems to be an issue accessing the recipe data.";
+            } else if (error.status === 402) {
+                 userMessage = "📋 Sorry, the daily recipe lookup limit has been reached. Please try again tomorrow!";
+            } else if (error.status === 404) {
+                 userMessage = "❓ Recipe not found. It might have been removed or the link is incorrect.";
+            } else {
+                 userMessage = `😕 Sorry, couldn't load recipe details. Error: ${error.message}.`;
+            }
+        }
+        errorText.textContent = userMessage;
         errorMessage.style.display = 'block';
-        console.error(message);
+        document.title = "Error Loading Recipe";
     }
 
     // Get recipe ID from URL query parameter
@@ -28,7 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const recipeId = params.get('id');
 
     if (!recipeId) {
-        showError('No recipe ID provided in the URL.');
+        showError({ message: 'No recipe ID provided in the URL.' }); // Pass error object
         return;
     }
 
@@ -39,9 +57,14 @@ document.addEventListener('DOMContentLoaded', () => {
         .then(response => {
             if (!response.ok) {
                  return response.json().then(errData => {
-                     throw new Error(errData.error || `Server responded with status ${response.status}`);
-                 }).catch(() => {
-                     throw new Error(`Failed to fetch details. Server responded with status ${response.status}`);
+                     const error = new Error(errData.error || `Server responded with status ${response.status}`);
+                     error.status = response.status; // Attach status
+                     throw error;
+                 }).catch((parseError) => {
+                     // If parsing JSON fails, throw original status error
+                     const error = new Error(`Failed to fetch details. Server responded with status ${response.status}`);
+                     error.status = response.status;
+                     throw error;
                  });
             }
             return response.json();
@@ -55,15 +78,16 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('recipe-image').src = data.image || 'placeholder.jpg';
             document.getElementById('recipe-image').alt = data.title || 'Recipe image';
 
-            // Populate Meta Info
-            document.getElementById('recipe-servings').innerHTML = `${data.servings ? data.servings : '-'}`;
-            document.getElementById('recipe-time').innerHTML = `${data.readyInMinutes ? data.readyInMinutes : '-'} min`;
+            // Populate Meta Info (with tooltips)
+            document.getElementById('recipe-servings').innerHTML = `<span title="Servings">👥</span> ${data.servings ? data.servings : '-'}`;
+            document.getElementById('recipe-time').innerHTML = `<span title="Ready in Minutes">⏰</span> ${data.readyInMinutes ? data.readyInMinutes : '-'} min`;
             const sourceLink = document.getElementById('recipe-source').querySelector('a');
             const sourceSpan = document.getElementById('recipe-source');
             if(data.sourceUrl) {
                sourceLink.href = data.sourceUrl;
                sourceLink.textContent = data.sourceName || data.creditsText || new URL(data.sourceUrl).hostname;
                sourceSpan.style.display = 'inline-flex';
+               sourceSpan.title = `Source: ${sourceLink.textContent}`; // Add title attribute
             } else { sourceSpan.style.display = 'none'; }
 
             // Populate Summary
@@ -76,7 +100,7 @@ document.addEventListener('DOMContentLoaded', () => {
             ingredientsList.innerHTML = '';
             if (data.extendedIngredients && data.extendedIngredients.length > 0) {
                 data.extendedIngredients.forEach(ingredient => {
-                    const li = document.createElement('li'); li.textContent = ingredient.original; li.tabIndex = 0;
+                    const li = document.createElement('li'); li.textContent = ingredient.original; li.tabIndex = 0; li.title = `Check/uncheck ${ingredient.nameClean || ingredient.name}`; // Tooltip
                     li.addEventListener('click', () => li.classList.toggle('checked'));
                     li.addEventListener('keypress', (e) => { if (e.key === 'Enter' || e.key === ' ') { li.classList.toggle('checked'); e.preventDefault(); } });
                     ingredientsList.appendChild(li);
@@ -102,8 +126,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
             document.title = `${data.title || 'Recipe'} Details`;
         })
-        .catch(error => { showError(error.message); document.title = "Error Loading Recipe"; });
+        .catch(error => {
+            showError(error); // Pass the whole error object
+        });
 
-    // Print Button Listener
+    // --- Print Button Event Listener ---
     printButton.addEventListener('click', () => { window.print(); });
+
+    // --- Scroll-to-Top Functionality ---
+    function handleScroll() {
+        if (window.scrollY > 300) { scrollToTopBtn.hidden = false; }
+        else { scrollToTopBtn.hidden = true; }
+    }
+    function scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
+    window.addEventListener('scroll', handleScroll);
+    scrollToTopBtn.addEventListener('click', scrollToTop);
+
 });
