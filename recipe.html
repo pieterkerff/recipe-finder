@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Recipe Details</title>
+    <title>Recipe Details</title> <!-- Will be updated by JS -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -17,20 +17,29 @@
     <!-- ===== Main Content Wrapper ===== -->
     <main class="main-content">
         <div class="recipe-detail-container">
-            <div class="detail-page-header"> <!-- Wrapper for back/print -->
+            <div class="detail-page-header">
                 <a href="index.html" class="back-link">Back to Search</a>
-                <button id="printRecipeButton" class="button-secondary print-button">🖨️ Print Recipe</button>
+                <div class="detail-page-actions"> <!-- Wrapper for buttons -->
+                    <!-- ===== NEW: Share Button ===== -->
+                    <button id="shareRecipeButton" class="button-secondary share-button" aria-label="Share this recipe">
+                        <span aria-hidden="true">🔗</span> Share
+                    </button>
+                    <!-- ============================ -->
+                    <button id="printRecipeButton" class="button-secondary print-button" aria-label="Print this recipe">
+                        <span aria-hidden="true">🖨️</span> Print Recipe
+                    </button>
+                </div>
             </div>
 
-            <div id="loading-message"><p>Loading recipe details...</p></div>
-            <div id="error-message" style="display: none;"><p></p></div>
+            <!-- Added role="status" -->
+            <div id="loading-message" role="status"><p>Loading recipe details...</p></div>
+            <div id="error-message" role="alert" style="display: none;"><p></p></div>
 
             <div id="recipe-content" style="display: none;">
                 <h1 id="recipe-title">Recipe Title</h1>
-                <img id="recipe-image" src="" alt="Recipe Image" loading="lazy">
+                <img id="recipe-image" src="" alt="Recipe Image"> <!-- Alt text updated by JS -->
 
                 <div class="recipe-meta">
-                     <!-- Added titles for tooltips -->
                      <span id="recipe-servings" title="Servings">Servings: -</span>
                      <span id="recipe-time" title="Ready in Minutes">Ready in: - minutes</span>
                      <span id="recipe-source" title="Recipe Source">Source: <a href="#" target="_blank" rel="noopener noreferrer">-</a></span>
@@ -71,11 +80,16 @@
     </footer>
     <!-- ======================= -->
 
-     <!-- ===== NEW: Scroll To Top Button ===== -->
-     <button id="scrollToTopBtn" class="scroll-to-top-btn" title="Go to top" hidden>
+     <!-- ===== Scroll To Top Button ===== -->
+     <button id="scrollToTopBtn" class="scroll-to-top-btn" title="Go to top" aria-label="Scroll back to top" hidden>
          <span>↑</span> <!-- Up arrow -->
      </button>
      <!-- =================================== -->
+
+    <!-- ===== NEW: Status message container for screen readers ===== -->
+    <div class="status-message" id="statusMessage" role="status" aria-live="polite"></div>
+    <!-- ========================================================== -->
+
 
     <!-- Link to the JavaScript file for this page -->
     <script src="recipe.js" defer></script>
